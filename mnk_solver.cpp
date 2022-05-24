@@ -7,7 +7,7 @@ enum Scores {
     WON = 1,
     LOST = -1,
     TIE = 0,
-    NONE = 2
+    NONE = 3
 };
 
 class Game {
@@ -55,30 +55,36 @@ public:
         }
     }
 
-    int getOppositePlayer() const {
+    int getOpponent() const {
         if (activePlayer == 1)
             return 2;
         else
             return 1;
     }
 
-    int checkWin(const bool& forMe) const {
-        int forWho;
-        if (forMe)
-            forWho = activePlayer;
-        else
-            forWho = getOppositePlayer();
+    bool isTie() const {
+        for (int i = 0; i < m; ++i)
+            for (int j = 0; j < n; ++j)
+                if (board[i][j] == 0)
+                    return false;
+
+        return true;
+    }
+
+    int checkWin() const {
+        if (isTie())
+            return TIE;
         
         int i, j, l;
 
         //horizontal
         for (i = 0; i < m; ++i) {
             for (j = 0; j <= n - k; ++j) {
-                for (l = 0; l < k; ++l) {
-                    if (l == k - 1 && board[i][j + l] == forWho)
-                        return WON;
-                    if (board[i][j + l] != forWho)
+                for (l = 1; l < k; ++l) {
+                    if (board[i][j] == 0 || board[i][j + l] != board[i][j])
                         break;
+                    if (l == k - 1 && board[i][j + l] == board[i][j])
+                        return board[i][j];
                 }
             }
         }
@@ -86,11 +92,11 @@ public:
         //vertical
         for (j = 0; j < n; ++j) {
             for (i = 0; i <= m - k; ++i) {
-                for (l = 0; l < k; ++l) {
-                    if (l == k - 1 && board[i + l][j] == forWho)
-                        return WON;
-                    if (board[i + l][j] != forWho)
+                for (l = 1; l < k; ++l) {
+                    if (board[i][j] == 0 || board[i + l][j] != board[i][j])
                         break;
+                    if (l == k - 1 && board[i + l][j] == board[i][j])
+                        return board[i][j];
                 }
             }
         }
@@ -99,22 +105,22 @@ public:
         // direction: "/"
         for (i = 0; i <= m - k; ++i) {
             for (j = k - 1; j < n; ++j) {
-                for (l = 0; l < k; ++l) {
-                    if (l == k - 1 && board[i + l][j - l] == forWho)
-                        return WON;
-                    if (board[i + l][j - l] != forWho)
+                for (l = 1; l < k; ++l) {
+                    if (board[i][j] == 0 || board[i + l][j - l] != board[i][j])
                         break;
+                    if (l == k - 1 && board[i + l][j - l] == board[i][j])
+                        return board[i][j];
                 }
             }
         }
         // direction: "\"
         for (i = 0; i <= m - k; ++i) {
             for (j = 0; j <= n - k; ++j) {
-                for (l = 0; l < k; ++l) {
-                    if (l == k - 1 && board[i + l][j + l] == forWho)
-                        return WON;
-                    if (board[i + l][j + l] != forWho)
+                for (l = 1; l < k; ++l) {
+                    if (board[i][j] == 0 || board[i + l][j + l] != board[i][j])
                         break;
+                    if (l == k - 1 && board[i + l][j + l] == board[i][j])
+                        return board[i][j];
                 }
             }
         }
@@ -144,7 +150,7 @@ public:
     }
 
     void genAllMoves() {
-        if (checkWin(false) == WON) {
+        if (checkWin() != NONE) {
             printf("0\n");
             return;
         }
@@ -154,7 +160,7 @@ public:
     }
 
     void genAllMovesCutIfOver() {
-        if (checkWin(false) == WON) {
+        if (checkWin() != NONE) {
             printf("0\n");
             return;
         }
@@ -163,7 +169,7 @@ public:
             for (int j = 0; j < n; ++j) {
                 if (board[i][j] == 0) {
                     board[i][j] = activePlayer;
-                    if (checkWin(true) == WON) {
+                    if (checkWin() == activePlayer) {
                         printf("1\n");
                         printBoard();
                         return;
@@ -177,6 +183,89 @@ public:
         printPossibleMoves();
     }
 
+    static void printWhoWon(const int& who) {
+        if (who == 1)
+            printf("FIRST_PLAYER_WINS\n");
+        else if (who == 2)
+            printf("SECOND_PLAYER_WINS\n");
+        else if (who == TIE)
+            printf("BOTH_PLAYERS_TIE\n");
+    }
+
+    void solveGame() {
+        int whoWon = checkWin();
+        if (whoWon != NONE) {
+            printWhoWon(whoWon);
+            return;
+        }
+
+        int bestVal = -1000;
+
+        for (int i = 0; i < m; ++i) {
+            for (int j = 0; j < n; ++j) {
+                if (board[i][j] == 0) {
+                    board[i][j] = activePlayer;
+                    int moveVal = minimax(false);
+                    board[i][j] = 0;
+
+                    if (moveVal > bestVal)
+                        bestVal = moveVal;
+                }
+            }
+        }
+
+        if (bestVal == 1)
+            printWhoWon(activePlayer);
+        else if (bestVal == -1)
+            printWhoWon(getOpponent());
+        else if (bestVal == TIE)
+            printWhoWon(TIE);
+    }
+
+    int minimax(bool isMaximazing) {
+        int whoWon = checkWin();
+        if (whoWon != NONE) {
+            if (whoWon == TIE)
+                return TIE;
+            else if (whoWon == activePlayer)
+                return WON;
+            else
+                return LOST;
+        }
+
+        if (isMaximazing) {
+            int bestVal = -1000;
+            for (int i = 0; i < m; ++i) {
+                for (int j = 0; j < n; ++j) {
+                    if (board[i][j] == 0) {
+                        board[i][j] = activePlayer;
+                        int moveVal = minimax(false);
+                        board[i][j] = 0;
+
+                        if (moveVal > bestVal)
+                            bestVal = moveVal;
+                    }
+                }
+            }
+            return bestVal;
+        }
+        else {
+            int bestVal = 1000;
+            for (int i = 0; i < m; ++i) {
+                for (int j = 0; j < n; ++j) {
+                    if (board[i][j] == 0) {
+                        board[i][j] = getOpponent();
+                        int moveVal = minimax(true);
+                        board[i][j] = 0;
+
+                        if (moveVal < bestVal)
+                            bestVal = moveVal;
+                    }
+                }
+            }
+            return bestVal;
+        }
+    }
 };
 
 
@@ -199,7 +288,7 @@ int main() {
             game.genAllMovesCutIfOver();
         }
         else if (strcmp(command, "SOLVE_GAME_STATE") == 0) {
-            //solve game
+            game.solveGame();
         }
 
         game.deallocateBoard();
