@@ -72,8 +72,9 @@ public:
     }
 
     int checkWin() const {
+        int result = NONE;
         if (isTie())
-            return TIE;
+            result = TIE;
         
         int i, j, l;
 
@@ -125,7 +126,7 @@ public:
             }
         }
 
-        return NONE;
+        return result;
     }
 
     void countPossibleMoves() const {
