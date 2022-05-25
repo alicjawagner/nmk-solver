@@ -197,40 +197,13 @@ public:
     }
 
     void solveGame() {
-        int whoWon = checkWin();
-        if (whoWon != NONE) {
-            printWhoWon(whoWon);
-            return;
-        }
+        int result = minimax(true);
 
-        int bestVal = MIN;
-        bool breakTheLoop = false;
-
-        for (int i = 0; i < m; ++i) {
-            for (int j = 0; j < n; ++j) {
-                if (board[i][j] == 0) {
-                    board[i][j] = activePlayer;
-                    int moveVal = minimax(false);
-                    board[i][j] = 0;
-
-                    if (moveVal > bestVal)
-                        bestVal = moveVal;
-
-                    if (moveVal == WON) {
-                        breakTheLoop = true;
-                        break;
-                    }
-                }
-            }
-            if (breakTheLoop)
-                break;
-        }
-
-        if (bestVal == WON)
+        if (result == WON)
             printWhoWon(activePlayer);
-        else if (bestVal == LOST)
+        else if (result == LOST)
             printWhoWon(getOpponent());
-        else if (bestVal == TIE)
+        else if (result == TIE)
             printWhoWon(TIE);
     }
 
