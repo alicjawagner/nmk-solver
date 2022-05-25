@@ -204,24 +204,19 @@ public:
         }
 
         int bestVal = MIN;
-        int alpha = MIN;
-        int beta = MAX;
         bool breakTheLoop = false;
 
         for (int i = 0; i < m; ++i) {
             for (int j = 0; j < n; ++j) {
                 if (board[i][j] == 0) {
                     board[i][j] = activePlayer;
-                    int moveVal = minimax(alpha, beta, false);
+                    int moveVal = minimax(false);
                     board[i][j] = 0;
 
                     if (moveVal > bestVal)
                         bestVal = moveVal;
 
-                    if (moveVal > alpha)
-                        alpha = moveVal;
-
-                    if (beta <= alpha) {
+                    if (moveVal == WON) {
                         breakTheLoop = true;
                         break;
                     }
@@ -231,15 +226,15 @@ public:
                 break;
         }
 
-        if (bestVal == 1)
+        if (bestVal == WON)
             printWhoWon(activePlayer);
-        else if (bestVal == -1)
+        else if (bestVal == LOST)
             printWhoWon(getOpponent());
         else if (bestVal == TIE)
             printWhoWon(TIE);
     }
 
-    int minimax(int alpha, int beta, bool isMaximazing) {
+    int minimax(bool isMaximazing) {
         int whoWon = checkWin();
         if (whoWon != NONE) {
             if (whoWon == TIE)
@@ -257,16 +252,13 @@ public:
                 for (int j = 0; j < n; ++j) {
                     if (board[i][j] == 0) {
                         board[i][j] = activePlayer;
-                        int moveVal = minimax(alpha, beta, false);
+                        int moveVal = minimax(false);
                         board[i][j] = 0;
 
                         if (moveVal > bestVal)
                             bestVal = moveVal;
 
-                        if (moveVal > alpha)
-                            alpha = moveVal;
-
-                        if (beta <= alpha) {
+                        if (moveVal == WON) {
                             breakTheLoop = true;
                             break;
                         }
@@ -283,16 +275,13 @@ public:
                 for (int j = 0; j < n; ++j) {
                     if (board[i][j] == 0) {
                         board[i][j] = getOpponent();
-                        int moveVal = minimax(alpha, beta, true);
+                        int moveVal = minimax(true);
                         board[i][j] = 0;
 
                         if (moveVal < bestVal)
                             bestVal = moveVal;
 
-                        if (moveVal < beta)
-                            beta = moveVal;
-
-                        if (beta <= alpha) {
+                        if (moveVal == LOST) {
                             breakTheLoop = true;
                             break;
                         }
