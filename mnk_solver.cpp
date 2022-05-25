@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #define MAX_COMMAND 33
+#define MIN -1000
+#define MAX 1000
 
 enum Scores {
     WON = 1,
@@ -200,19 +203,32 @@ public:
             return;
         }
 
-        int bestVal = -1000;
+        int bestVal = MIN;
+        int alpha = MIN;
+        int beta = MAX;
+        bool breakTheLoop = false;
 
         for (int i = 0; i < m; ++i) {
             for (int j = 0; j < n; ++j) {
                 if (board[i][j] == 0) {
                     board[i][j] = activePlayer;
-                    int moveVal = minimax(false);
+                    int moveVal = minimax(alpha, beta, false);
                     board[i][j] = 0;
 
                     if (moveVal > bestVal)
                         bestVal = moveVal;
+
+                    if (moveVal > alpha)
+                        alpha = moveVal;
+
+                    if (beta <= alpha) {
+                        breakTheLoop = true;
+                        break;
+                    }
                 }
             }
+            if (breakTheLoop)
+                break;
         }
 
         if (bestVal == 1)
@@ -223,7 +239,7 @@ public:
             printWhoWon(TIE);
     }
 
-    int minimax(bool isMaximazing) {
+    int minimax(int alpha, int beta, bool isMaximazing) {
         int whoWon = checkWin();
         if (whoWon != NONE) {
             if (whoWon == TIE)
@@ -234,35 +250,56 @@ public:
                 return LOST;
         }
 
+        bool breakTheLoop = false;
         if (isMaximazing) {
-            int bestVal = -1000;
+            int bestVal = MIN;
             for (int i = 0; i < m; ++i) {
                 for (int j = 0; j < n; ++j) {
                     if (board[i][j] == 0) {
                         board[i][j] = activePlayer;
-                        int moveVal = minimax(false);
+                        int moveVal = minimax(alpha, beta, false);
                         board[i][j] = 0;
 
                         if (moveVal > bestVal)
                             bestVal = moveVal;
+
+                        if (moveVal > alpha)
+                            alpha = moveVal;
+
+                        if (beta <= alpha) {
+                            breakTheLoop = true;
+                            break;
+                        }
                     }
                 }
+                if (breakTheLoop)
+                    break;
             }
             return bestVal;
         }
         else {
-            int bestVal = 1000;
+            int bestVal = MAX;
             for (int i = 0; i < m; ++i) {
                 for (int j = 0; j < n; ++j) {
                     if (board[i][j] == 0) {
                         board[i][j] = getOpponent();
-                        int moveVal = minimax(true);
+                        int moveVal = minimax(alpha, beta, true);
                         board[i][j] = 0;
 
                         if (moveVal < bestVal)
                             bestVal = moveVal;
+
+                        if (moveVal < beta)
+                            beta = moveVal;
+
+                        if (beta <= alpha) {
+                            breakTheLoop = true;
+                            break;
+                        }
                     }
                 }
+                if (breakTheLoop)
+                    break;
             }
             return bestVal;
         }
