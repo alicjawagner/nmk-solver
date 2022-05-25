@@ -245,7 +245,6 @@ public:
                 return LOST;
         }
 
-        bool breakTheLoop = false;
         if (isMaximazing) {
             int bestVal = MIN;
             for (int i = 0; i < m; ++i) {
@@ -259,13 +258,10 @@ public:
                             bestVal = moveVal;
 
                         if (moveVal == WON) {
-                            breakTheLoop = true;
-                            break;
+                            return bestVal;
                         }
                     }
                 }
-                if (breakTheLoop)
-                    break;
             }
             return bestVal;
         }
@@ -282,13 +278,10 @@ public:
                             bestVal = moveVal;
 
                         if (moveVal == LOST) {
-                            breakTheLoop = true;
-                            break;
+                            return bestVal;
                         }
                     }
                 }
-                if (breakTheLoop)
-                    break;
             }
             return bestVal;
         }
