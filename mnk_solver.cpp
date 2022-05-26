@@ -76,12 +76,14 @@ public:
 
     //returns NONE or who
     int checkPreWin(const int& who) const {
-        int i, j, l;
+
         bool isWidthMoreThanK = false, isHeightMoreThanK = false;
         if (n > k)
             isWidthMoreThanK = true;
         if (m > k)
             isHeightMoreThanK = true;
+
+        int i, j, l;
 
         //horizontal
         if (isWidthMoreThanK) {
@@ -138,7 +140,20 @@ public:
             }
 
             // direction: "\"
-            //TO DO
+            for (i = 1; i <= m - k; ++i) {
+                for (j = 1; j <= n - k; ++j) {
+                    if (board[i][j] != who)
+                        continue;
+
+                    for (l = 1; l < k - 1; ++l) {
+                        if (board[i + l][j + l] != who)
+                            break;
+                        if (l == k - 2)
+                            if (board[i - 1][j - 1] == 0 && board[i + l + 1][j + l + 1] == 0)
+                                return who;
+                    }
+                }
+            }
         }
 
         return NONE;
@@ -293,6 +308,16 @@ public:
     }
 
     int minimax(bool isMaximazing) {
+        int opponent = getOpponent();
+        if (isMaximazing) {
+            if (checkPreWin(activePlayer) == activePlayer)
+                return WON;
+        }
+        else {
+            if (checkPreWin(opponent) == opponent)
+                return LOST;
+        }
+
         int whoWon = checkWin();
         if (whoWon != NONE) {
             if (whoWon == TIE)
@@ -328,7 +353,7 @@ public:
             for (int i = 0; i < m; ++i) {
                 for (int j = 0; j < n; ++j) {
                     if (board[i][j] == 0) {
-                        board[i][j] = getOpponent();
+                        board[i][j] = opponent;
                         int moveVal = minimax(true);
                         board[i][j] = 0;
 
