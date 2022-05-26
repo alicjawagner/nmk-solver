@@ -3,8 +3,8 @@
 #include <string.h>
 
 #define MAX_COMMAND 33
-#define MIN -1000
-#define MAX 1000
+#define MIN -10
+#define MAX 10
 
 enum Scores {
     WON = 1,
@@ -74,33 +74,107 @@ public:
         return true;
     }
 
-    int checkWin() const {
-        int result = NONE;
-        if (isTie())
-            result = TIE;
-        
+    //returns NONE or who
+    int checkPreWin(const int& who) const {
         int i, j, l;
+        bool isWidthMoreThanK = false, isHeightMoreThanK = false;
+        if (n > k)
+            isWidthMoreThanK = true;
+        if (m > k)
+            isHeightMoreThanK = true;
+
+        //horizontal
+        if (isWidthMoreThanK) {
+            for (i = 0; i < m; ++i) {
+                for (j = 1; j <= n - k; ++j) {
+                    if (board[i][j] != who)
+                        continue;
+
+                    for (l = 1; l < k - 1; ++l) {
+                        if (board[i][j + l] != who)
+                            break;
+                        if (l == k - 2)
+                            if (board[i][j - 1] == 0 && board[i][j + l + 1] == 0)
+                                return who;
+                    }
+                }
+            }
+        }
+
+        //vertical
+        if (isHeightMoreThanK) {
+            for (j = 0; j < n; ++j) {
+                for (i = 1; i <= m - k; ++i) {
+                    if (board[i][j] != who)
+                        continue;
+
+                    for (l = 1; l < k - 1; ++l) {
+                        if (board[i + l][j] != who)
+                            break;
+                        if (l == k - 2)
+                            if (board[i - 1][j] == 0 && board[i + l + 1][j] == 0)
+                                return who;
+                    }
+                }
+            }
+        }
+
+        //diagonal
+        if (isWidthMoreThanK && isHeightMoreThanK) {
+            // direction: "/"
+            for (i = 1; i <= m - k; ++i) {
+                for (j = k - 1; j < n - 1; ++j) {
+                    if (board[i][j] != who)
+                        continue;
+
+                    for (l = 1; l < k - 1; ++l) {
+                        if (board[i + l][j - l] != who)
+                            break;
+                        if (l == k - 2)
+                            if (board[i - 1][j + 1] == 0 && board[i + l + 1][j - l - 1] == 0)
+                                return who;
+                    }
+                }
+            }
+
+            // direction: "\"
+            //TO DO
+        }
+
+        return NONE;
+    }
+
+    int checkWin() const {
+        int i, j, l, who;
 
         //horizontal
         for (i = 0; i < m; ++i) {
             for (j = 0; j <= n - k; ++j) {
+                who = board[i][j];
+                if (who == 0)
+                    continue;
+
                 for (l = 1; l < k; ++l) {
-                    if (board[i][j] == 0 || board[i][j + l] != board[i][j])
+                    if (board[i][j + l] != who)
                         break;
-                    if (l == k - 1 && board[i][j + l] == board[i][j])
-                        return board[i][j];
+                    if (l == k - 1)
+                        return who;
                 }
             }
         }
-        
+
         //vertical
         for (j = 0; j < n; ++j) {
             for (i = 0; i <= m - k; ++i) {
+                who = board[i][j];
+                if (who == 0)
+                    continue;
+
                 for (l = 1; l < k; ++l) {
-                    if (board[i][j] == 0 || board[i + l][j] != board[i][j])
+                    if (board[i + l][j] != who)
                         break;
-                    if (l == k - 1 && board[i + l][j] == board[i][j])
-                        return board[i][j];
+                    if (l == k - 1)
+                        return who;
                 }
             }
         }
@@ -109,27 +183,38 @@ public:
         // direction: "/"
         for (i = 0; i <= m - k; ++i) {
             for (j = k - 1; j < n; ++j) {
+                who = board[i][j];
+                if (who == 0)
+                    continue;
+
                 for (l = 1; l < k; ++l) {
-                    if (board[i][j] == 0 || board[i + l][j - l] != board[i][j])
+                    if (board[i + l][j - l] != who)
                         break;
-                    if (l == k - 1 && board[i + l][j - l] == board[i][j])
-                        return board[i][j];
+                    if (l == k - 1)
+                        return who;
                 }
             }
         }
         // direction: "\"
         for (i = 0; i <= m - k; ++i) {
             for (j = 0; j <= n - k; ++j) {
+                who = board[i][j];
+                if (who == 0)
+                    continue;
+
                 for (l = 1; l < k; ++l) {
-                    if (board[i][j] == 0 || board[i + l][j + l] != board[i][j])
+                    if (board[i + l][j + l] != who)
                         break;
-                    if (l == k - 1 && board[i + l][j + l] == board[i][j])
-                        return board[i][j];
+                    if (l == k - 1)
+                        return who;
                 }
             }
         }
 
-        return result;
+        if (isTie())
+            return TIE;
+        else
+            return NONE;
     }
 
     void countPossibleMoves() const {
