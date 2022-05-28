@@ -74,106 +74,17 @@ public:
         return true;
     }
 
-    //returns NONE or who
-    int checkPreWin(const int& who) const {
-
-        bool isWidthMoreThanK = false, isHeightMoreThanK = false;
-        if (n > k)
-            isWidthMoreThanK = true;
-        if (m > k)
-            isHeightMoreThanK = true;
-
-        int i, j, l;
-
-        //horizontal
-        if (isWidthMoreThanK) {
-            for (i = 0; i < m; ++i) {
-                for (j = 1; j <= n - k; ++j) {
-                    if (board[i][j] != who)
-                        continue;
-
-                    for (l = 1; l < k - 1; ++l) {
-                        if (board[i][j + l] != who)
-                            break;
-                        if (l == k - 2)
-                            if (board[i][j - 1] == 0 && board[i][j + l + 1] == 0)
-                                return who;
-                    }
-                }
-            }
-        }
-
-        //vertical
-        if (isHeightMoreThanK) {
-            for (j = 0; j < n; ++j) {
-                for (i = 1; i <= m - k; ++i) {
-                    if (board[i][j] != who)
-                        continue;
-
-                    for (l = 1; l < k - 1; ++l) {
-                        if (board[i + l][j] != who)
-                            break;
-                        if (l == k - 2)
-                            if (board[i - 1][j] == 0 && board[i + l + 1][j] == 0)
-                                return who;
-                    }
-                }
-            }
-        }
-
-        //diagonal
-        if (isWidthMoreThanK && isHeightMoreThanK) {
-            // direction: "/"
-            for (i = 1; i <= m - k; ++i) {
-                for (j = k - 1; j < n - 1; ++j) {
-                    if (board[i][j] != who)
-                        continue;
-
-                    for (l = 1; l < k - 1; ++l) {
-                        if (board[i + l][j - l] != who)
-                            break;
-                        if (l == k - 2)
-                            if (board[i - 1][j + 1] == 0 && board[i + l + 1][j - l - 1] == 0)
-                                return who;
-                    }
-                }
-            }
-
-            // direction: "\"
-            for (i = 1; i <= m - k; ++i) {
-                for (j = 1; j <= n - k; ++j) {
-                    if (board[i][j] != who)
-                        continue;
-
-                    for (l = 1; l < k - 1; ++l) {
-                        if (board[i + l][j + l] != who)
-                            break;
-                        if (l == k - 2)
-                            if (board[i - 1][j - 1] == 0 && board[i + l + 1][j + l + 1] == 0)
-                                return who;
-                    }
-                }
-            }
-        }
-
-        return NONE;
-    }
-
     int checkWin() const {
-        int i, j, l, who;
+        int i, j, l;
 
         //horizontal
         for (i = 0; i < m; ++i) {
             for (j = 0; j <= n - k; ++j) {
-                who = board[i][j];
-                if (who == 0)
-                    continue;
-
                 for (l = 1; l < k; ++l) {
-                    if (board[i][j + l] != who)
+                    if (board[i][j] == 0 || board[i][j + l] != board[i][j])
                         break;
-                    if (l == k - 1)
-                        return who;
+                    if (l == k - 1 && board[i][j + l] == board[i][j])
+                        return board[i][j];
                 }
             }
         }
@@ -181,15 +92,11 @@ public:
         //vertical
         for (j = 0; j < n; ++j) {
             for (i = 0; i <= m - k; ++i) {
-                who = board[i][j];
-                if (who == 0)
-                    continue;
-
                 for (l = 1; l < k; ++l) {
-                    if (board[i + l][j] != who)
+                    if (board[i][j] == 0 || board[i + l][j] != board[i][j])
                         break;
-                    if (l == k - 1)
-                        return who;
+                    if (l == k - 1 && board[i + l][j] == board[i][j])
+                        return board[i][j];
                 }
             }
         }
@@ -198,30 +105,22 @@ public:
         // direction: "/"
         for (i = 0; i <= m - k; ++i) {
             for (j = k - 1; j < n; ++j) {
-                who = board[i][j];
-                if (who == 0)
-                    continue;
-
                 for (l = 1; l < k; ++l) {
-                    if (board[i + l][j - l] != who)
+                    if (board[i][j] == 0 || board[i + l][j - l] != board[i][j])
                         break;
-                    if (l == k - 1)
-                        return who;
+                    if (l == k - 1 && board[i + l][j - l] == board[i][j])
+                        return board[i][j];
                 }
             }
         }
         // direction: "\"
         for (i = 0; i <= m - k; ++i) {
             for (j = 0; j <= n - k; ++j) {
-                who = board[i][j];
-                if (who == 0)
-                    continue;
-
                 for (l = 1; l < k; ++l) {
-                    if (board[i + l][j + l] != who)
+                    if (board[i][j] == 0 || board[i + l][j + l] != board[i][j])
                         break;
-                    if (l == k - 1)
-                        return who;
+                    if (l == k - 1 && board[i + l][j + l] == board[i][j])
+                        return board[i][j];
                 }
             }
         }
@@ -308,16 +207,6 @@ public:
     }
 
     int minimax(bool isMaximazing) {
-        int opponent = getOpponent();
-        if (isMaximazing) {
-            if (checkPreWin(activePlayer) == activePlayer)
-                return WON;
-        }
-        else {
-            if (checkPreWin(opponent) == opponent)
-                return LOST;
-        }
-
         int whoWon = checkWin();
         if (whoWon != NONE) {
             if (whoWon == TIE)
@@ -337,12 +226,12 @@ public:
                         int moveVal = minimax(false);
                         board[i][j] = 0;
 
+                        if (moveVal == WON) {
+                            return moveVal;
+                        }
+
                         if (moveVal > bestVal)
                             bestVal = moveVal;
-
-                        if (moveVal == WON) {
-                            return bestVal;
-                        }
                     }
                 }
             }
@@ -353,16 +242,16 @@ public:
             for (int i = 0; i < m; ++i) {
                 for (int j = 0; j < n; ++j) {
                     if (board[i][j] == 0) {
-                        board[i][j] = opponent;
+                        board[i][j] = getOpponent();
                         int moveVal = minimax(true);
                         board[i][j] = 0;
 
+                        if (moveVal == LOST) {
+                            return moveVal;
+                        }
+
                         if (moveVal < bestVal)
                             bestVal = moveVal;
-
-                        if (moveVal == LOST) {
-                            return bestVal;
-                        }
                     }
                 }
             }
